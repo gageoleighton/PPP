@@ -1,0 +1,4 @@
+.venv
+target/
+requirements.txt
+.DS_Store
