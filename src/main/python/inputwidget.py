@@ -1,7 +1,15 @@
-from PySide2.QtWidgets import QWidget, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QTableWidget
+from PySide2.QtWidgets import (
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QHBoxLayout,
+    QVBoxLayout,
+    QTableWidget,
+)
 from customwidgets import ClickableLineEdit
 from proteinmodel import ProteinModel
 from biocalcs import *
+
 
 class inputWidget(QWidget):
     def __init__(self, preserves):
@@ -15,7 +23,9 @@ class inputWidget(QWidget):
         layout.addLayout(self.nameLayout)
         self.proteinNameLabel = QLabel("Protein name: ")
         self.nameLayout.addWidget(self.proteinNameLabel)
-        self.proteinName = QLineEdit(self.preserves.settings.value("protein0", type=str))
+        self.proteinName = QLineEdit(
+            self.preserves.settings.value("protein0", type=str)
+        )
         self.nameLayout.addWidget(self.proteinName)
 
         self.proteinInput = QHBoxLayout()
@@ -23,7 +33,9 @@ class inputWidget(QWidget):
         self.lengthLabel = QLabel("AA sequence: ")
         self.proteinInput.addWidget(self.lengthLabel)
         self.pILabel = QLabel()
-        self.sequenceEdit = ClickableLineEdit(self.preserves.settings.value("sequence0", type=str))
+        self.sequenceEdit = ClickableLineEdit(
+            self.preserves.settings.value("sequence0", type=str)
+        )
         self.proteinInput.addWidget(self.sequenceEdit)
         self.sequenceEdit.setClearButtonEnabled(True)
 
@@ -35,10 +47,18 @@ class inputWidget(QWidget):
         layout.addLayout(self.settings)
         layout.addStretch()
 
-# Input view ---------------------------------------------------
+        # Input view ---------------------------------------------------
 
-
-        self.headers = ['Name', 'Sequence', 'pI', 'Extinction Reduced', 'Extinction Disulfide', 'Weight', 'Aromaticity', 'Flexibility']
+        self.headers = [
+            "Name",
+            "Sequence",
+            "pI",
+            "Extinction Reduced",
+            "Extinction Disulfide",
+            "Weight",
+            "Aromaticity",
+            "Flexibility",
+        ]
 
         self.protein = protein(self.proteinName.text(), self.sequenceEdit.text())
 
@@ -49,7 +69,7 @@ class inputWidget(QWidget):
         # remove spaces
         self.sequenceEdit.setText(self.sequenceEdit.text().replace(" ", ""))
         self.lengthLabel.setText("AA sequence: " + str(len(self.sequenceEdit.text())))
-    
+
     # def calculate(self):
     #     self.protein = protein(self.proteinName.text(), self.sequenceEdit.text())
     #     self.proteinModel.protein = self.protein.data
