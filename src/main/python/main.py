@@ -139,6 +139,12 @@ class MainWindow(QMainWindow):
         self.leftLayout.addLayout(self.addRemoveLayout)
         self.layout.addLayout(self.leftLayout)
 
+        self.filterList = QLineEdit()
+        self.filterList.setPlaceholderText("Filter list")
+        self.filterList.setClearButtonEnabled(True)
+        self.filterList.textChanged.connect(self.filter_list)
+        self.leftLayout.addWidget(self.filterList)
+
         self.listWidget = MainList()
         self.leftLayout.addWidget(self.listWidget)
         # self.listWidget.selectionModel().selectionChanged.connect(self.selection_changed)
@@ -292,6 +298,19 @@ class MainWindow(QMainWindow):
         if name and sequence:
             self.listModel._data.append(protein(name, sequence))
             self.listModel.layoutChanged.emit()
+
+    def filter_list(self):
+        filter = self.filterList.text()
+        model = self.listWidget.model()
+        if filter != "":
+            for index in range(model.rowCount(0)):
+                if model.index(index, 0).data() == filter:
+                    print(model.index(index, 0).data)
+                else:
+                    self.listWidget.setRowHidden(index, True)
+        else:
+            for index in range(model.rowCount(0)):
+                self.listWidget.setRowHidden(index, False)
 
     # def adjust_up(self):
     #     indexes = self.listWidget.selectedIndexes()
