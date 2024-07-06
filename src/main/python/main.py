@@ -1,6 +1,6 @@
 "Application Corrupt run xattr -cr /path/to/application.app"
 
-from fbs_runtime.application_context.PySide2 import ApplicationContext
+from base import context
 from fbs_runtime import PUBLIC_SETTINGS
 
 import sys, os
@@ -19,17 +19,21 @@ from PySide2.QtWidgets import (
     QFileDialog,
     QAction,
     QSizePolicy,
+    QMessageBox,
 )
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt, QEvent
+from PySide2.QtGui import QIcon, QCloseEvent
+from PySide2.QtCore import Qt, QEvent, QItemSelectionModel
 
 import qdarktheme
 
 from customtitlebar import CustomTitleBar
 
 from inputwidget import inputWidget
-from maintreeview import MainTreeView, TreeModel, Node
+from filterwidget import FilterWidget
+
+# from maintreeview import MainTreeView, TreeModel, Node
 from summarytable import summaryTable, summaryModel
+from aatab import aaTab
 from concentration import Concentration
 
 from mainlistview import MainList, ListModel
@@ -44,6 +48,10 @@ from customwidgets import *
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QMainWindow):
+    """
+    Main Window Class
+    """
+
     def __init__(self):
         super().__init__()
         self.preserves = Perseverance()
@@ -66,7 +74,7 @@ class MainWindow(QMainWindow):
 
         import_action = QAction("&Import", self)
         import_action.setShortcut("Ctrl+I")
-        import_action.triggered.connect(self.inport_data)
+        import_action.triggered.connect(self.import_data)
 
         export_action = QAction("&Export", self)
         export_action.setShortcut("Ctrl+E")
@@ -82,19 +90,17 @@ class MainWindow(QMainWindow):
         delete_save_action.setShortcut("Ctrl+D")
         delete_save_action.triggered.connect(self.preserves.delete_settings)
 
-        exit_action = QAction(" E&xit", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(QApplication.closeAllWindows)
+        # exit_action = QAction(" E&xit", self)
+        # exit_action.setShortcut("Ctrl+Q")
+        # exit_action.triggered.connect(lambda: self.closeEvent(QCloseEvent()))
 
         file_menu.addActions(
-            [import_action, export_action, save_action, delete_save_action, exit_action]
+            [import_action, export_action, save_action, delete_save_action]
         )
 
         help_menu = menu.addMenu("&Help")
-
         about_action = QAction("&About...", self)
         about_action.triggered.connect(aboutDialog)
-
         help_menu.addActions([about_action])
 
         # Main widget ---------------------------------------------------
@@ -139,10 +145,7 @@ class MainWindow(QMainWindow):
         self.leftLayout.addLayout(self.addRemoveLayout)
         self.layout.addLayout(self.leftLayout)
 
-        self.filterList = QLineEdit()
-        self.filterList.setPlaceholderText("Filter list")
-        self.filterList.setClearButtonEnabled(True)
-        self.filterList.textChanged.connect(self.filter_list)
+        self.filterList = FilterWidget()
         self.leftLayout.addWidget(self.filterList)
 
         self.listWidget = MainList()
@@ -167,9 +170,9 @@ class MainWindow(QMainWindow):
         self.adjustUp.clicked.connect(self.move_up)
         self.adjustDown.clicked.connect(self.move_down)
 
-        self.treeView = MainTreeView()
-        self.treeModel = TreeModel()
-        self.treeView.setModel(self.treeModel)
+        # self.treeView = MainTreeView()
+        # self.treeModel = TreeModel()
+        # self.treeView.setModel(self.treeModel)
         # self.leftLayout.addWidget(self.treeView)
 
         data = {
@@ -195,7 +198,7 @@ class MainWindow(QMainWindow):
         self.summaryModel = summaryModel(self.preserves)
         self.summaryTable.setModel(self.summaryModel)
 
-        self.aaTab = QTableWidget()
+        self.aaTab = aaTab()
         # self.tabWidget.addTab(self.aaTab, "Amino acids")
         self.aacids = [
             "A",
@@ -230,23 +233,106 @@ class MainWindow(QMainWindow):
 
         self.preserves.load_settings(self)
 
-    def changeEvent(self, event):
+    def closeEvent(self, event) -> None:
+        """
+        Defines the behavior for the close event of the main window.
+        Checks if any unsaved changes are present and prompts the user to save before quitting.
+        Saves settings if the user chooses to do so.
+        """
+        super().closeEvent(event)
+        if self.preserves.settings.value("proteinCount", type=int) != len(
+            self.listModel._data
+        ):
+            dlg = QMessageBox()
+            dlg.setWindowTitle("Quit")
+            dlg.setText("Save before quitting?")
+            dlg.setIcon(QMessageBox.Icon.Question)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            dlg.setDefaultButton(QMessageBox.StandardButton.No)
+            ret = dlg.exec()
+            if ret == QMessageBox.StandardButton.Yes:
+                self.preserves.save_settings(self)
+                event.accept()
+            else:
+                event.accept()
+        else:
+            event.accept()
+
+    def changeEvent(self, event) -> None:
+        """
+        Handles the change event for the window state.
+
+        This function is called when the window state changes. It checks if the event type is a window state change event.
+        If it is, it calls the `window_state_changed` method of the `title_bar` object with the current window state.
+        Then, it calls the `changeEvent` method of the parent class to handle any other change events.
+        Finally, it accepts the event.
+
+        Parameters:
+            event (QEvent): The event object representing the change event.
+
+        Returns:
+            None
+        """
         if event.type() == QEvent.Type.WindowStateChange:
             self.title_bar.window_state_changed(self.windowState())
         super().changeEvent(event)
         event.accept()
 
-    def window_state_changed(self, state):
+    def window_state_changed(self, state) -> None:
+        """
+        Handles the window state change event.
+
+        This function is called when the window state changes. It checks if the window state is maximized.
+        If it is, it sets the `normal_button` and `max_button` to visible.
+        If it is not, it sets the `normal_button` and `max_button` to invisible.
+
+        Parameters:
+            state (Qt.WindowState): The current window state.
+
+        Returns:
+            None
+        """
+        self.title_bar.window_state_changed(state)
         self.normal_button.setVisible(state == Qt.WindowState.WindowMaximized)
         self.max_button.setVisible(state != Qt.WindowState.WindowMaximized)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event) -> None:
+        """
+        Handles the mouse press event.
+
+        This function is called when the mouse is pressed. It checks if the left mouse button is pressed.
+        If it is, it sets the `initial_pos` variable to the current mouse position.
+        Then, it calls the `mousePressEvent` method of the parent class to handle any other mouse press events.
+        Finally, it accepts the event.
+
+        Parameters:
+            event (QMouseEvent): The mouse event object.
+
+        Returns:
+            None
+        """
         if event.button() == Qt.MouseButton.LeftButton:
             self.initial_pos = event.pos()
         super().mousePressEvent(event)
         event.accept()
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event) -> None:
+        """
+        Handles the mouse move event.
+
+        This function is called when the mouse is moved. It checks if the `initial_pos` variable is set.
+        If it is, it calculates the difference between the current mouse position and the initial position.
+        Then, it calls the `mouseMoveEvent` method of the parent class to handle any other mouse move events.
+        Finally, it accepts the event.
+
+        Parameters:
+            event (QMouseEvent): The mouse event object.
+
+        Returns:
+            None
+        """
         if self.initial_pos is not None:
             delta = event.pos() - self.initial_pos
             self.window().move(
@@ -256,14 +342,43 @@ class MainWindow(QMainWindow):
         super().mouseMoveEvent(event)
         event.accept()
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event) -> None:
+        """
+        Handles the mouse release event.
+
+        This function is called when the mouse is released. It sets the `initial_pos` variable to `None`.
+        Then, it calls the `mouseReleaseEvent` method of the parent class to handle any other mouse release events.
+        Finally, it accepts the event.
+
+        Parameters:
+            event (QMouseEvent): The mouse event object.
+
+        Returns:
+            None
+        """
         self.initial_pos = None
         super().mouseReleaseEvent(event)
         event.accept()
 
-    def selection_changed(self):
+    def selection_changed(self) -> None:
+        """
+        Handles the selection changed event.
+
+        This function is called when the selection in the list widget changes. It gets the selected indexes from the list widget.
+        Then, it clears the summary model and the aaTab table. It then iterates over the selected indexes and adds the corresponding items to the summary model and the aaTab table.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         indexes = self.listWidget.selectedIndexes()
-        # print(indexes)
+        # print(indexes[0].row())
+        # self.listWidget.selectionModel().select(
+        #     indexes[0], QItemSelectionModel.SelectionFlag.ClearAndSelect
+        # )
+        # print(self.listModel.index(indexes[0].row(), 0))
         if indexes:
             self.summaryModel._data = []
             self.concentration.extinctions = self.listModel._data[
@@ -273,6 +388,7 @@ class MainWindow(QMainWindow):
             self.concentration.sequence = self.listModel._data[
                 indexes[0].row()
             ].sequence
+            self.concentration.name = self.listModel._data[indexes[0].row()].name
             # self.concentration.updateLabels()
             try:
                 self.concentration.calcConc()
@@ -287,30 +403,39 @@ class MainWindow(QMainWindow):
                     )
             self.summaryModel.layoutChanged.emit()
 
-    def clear_selection(self):
+    def clear_selection(self) -> None:
+        """
+        Handles the clear selection event.
+
+        This function is called when the clear selection button is clicked. It clears the selection in the list widget and the summary model.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         self.listWidget.clearSelection()
         self.summaryModel._data = []
         self.summaryModel.layoutChanged.emit()
 
-    def add_item(self):
+    def add_item(self) -> None:
+        """
+        Handles the add item event.
+
+        This function is called when the add item button is clicked. It gets the protein name and sequence from the input widget and adds it to the list model.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         name = self.inputWidget.proteinName.text()
         sequence = self.inputWidget.sequenceEdit.text()
         if name and sequence:
             self.listModel._data.append(protein(name, sequence))
             self.listModel.layoutChanged.emit()
-
-    def filter_list(self):
-        filter = self.filterList.text()
-        model = self.listWidget.model()
-        if filter != "":
-            for index in range(model.rowCount(0)):
-                if model.index(index, 0).data() == filter:
-                    print(model.index(index, 0).data)
-                else:
-                    self.listWidget.setRowHidden(index, True)
-        else:
-            for index in range(model.rowCount(0)):
-                self.listWidget.setRowHidden(index, False)
 
     # def adjust_up(self):
     #     indexes = self.listWidget.selectedIndexes()
@@ -322,7 +447,18 @@ class MainWindow(QMainWindow):
     #             item = self.listWidget.model().index(indexes[0].row(), 0)
     #             self.listModel._data.insert(item.row()-1, self.listModel._data.pop(item.row()))
 
-    def move_up(self):
+    def move_up(self) -> None:
+        """
+        Handles the move up event.
+
+        This function is called when the move up button is clicked. It gets the selected index from the list widget and moves it up in the list model.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         index = self.listWidget.currentIndex()
         self.listModel.move_item_up(index.row())
         self.listWidget.clearSelection()
@@ -331,7 +467,18 @@ class MainWindow(QMainWindow):
         )
         # self.listWidget.setCurrentIndex(self.listWidget.model().index(index.row()-1, 0), QItemSelectionModel.SelectionFlag.Select)
 
-    def move_down(self):
+    def move_down(self) -> None:
+        """
+        Handles the move down event.
+
+        This function is called when the move down button is clicked. It gets the selected index from the list widget and moves it down in the list model.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         index = self.listWidget.currentIndex()
         self.listModel.move_item_down(index.row())
         self.listWidget.clearSelection()
@@ -339,7 +486,18 @@ class MainWindow(QMainWindow):
             self.listWidget.model().index(index.row() + 1, 0)
         )
 
-    def delete_item(self):
+    def delete_item(self) -> None:
+        """
+        Handles the delete item event.
+
+        This function is called when the delete item button is clicked. It gets the selected indexes from the list widget and deletes them from the list model.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         indexes = self.listWidget.selectedIndexes()
         if indexes:
             if len(indexes) > 1:
@@ -352,7 +510,18 @@ class MainWindow(QMainWindow):
             self.listWidget.clearSelection()
 
     # Export data as a fasta file
-    def export_data(self):
+    def export_data(self) -> None:
+        """
+        Handles the export data event.
+
+        This function is called when the export data button is clicked. It gets the selected indexes from the list widget and exports them to a fasta file.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         # dialog for saving file
         fileName, _ = QFileDialog.getSaveFileName(
             self, "Export data", "", "Fasta Files (*.fasta)"
@@ -364,7 +533,19 @@ class MainWindow(QMainWindow):
                     f.write(f">{item.name}\n{item.sequence}\n")
 
     # Import data from a fasta file
-    def import_data(self):
+    def import_data(self) -> None:
+        """
+        Handles the import data event.
+
+        This function is called when the import data button is clicked. It gets the selected indexes from the list widget and imports them from a fasta file.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        # dialog for loading file
         fileName, _ = QFileDialog.getOpenFileName(
             self, "Import data", "", "Fasta Files (*.fasta)"
         )
@@ -379,38 +560,21 @@ class MainWindow(QMainWindow):
                 self.listModel._data.append(protein(name, sequence))
                 self.listModel.layoutChanged.emit()
 
-    def inport_data(self):
-        # dialog for loading file
-        fileName, _ = QFileDialog.getOpenFileName(
-            self, "Import data", "", "Fasta Files (*.fasta)"
-        )
-        if fileName:
-            with open(fileName, "r") as f:
-                for record in SeqIO.parse(f, "fasta"):
-                    # print(record.description, record.seq)
-                    name = record.description
-                    sequence = str(record.seq)
-                    self.listModel._data.append(protein(name, sequence))
-                self.listModel.layoutChanged.emit()
 
-
-class AppContext(ApplicationContext):
-    def __init__(self):
-        super().__init__()
-
-    def run(self):
-        window = MainWindow()
-        window.setWindowTitle(
-            f'{PUBLIC_SETTINGS["app_name"]} - Version: {PUBLIC_SETTINGS["version"]}'
-        )
-        self.app.setWindowIcon(QIcon(self.get_resource("close.svg")))
-        window.resize(500, 500)
-        window.show()
-        qdarktheme.setup_theme()
-        return self.app.exec_()
+def run():
+    """
+    Runs the application."""
+    window = MainWindow()
+    window.setWindowTitle(
+        f'{PUBLIC_SETTINGS["app_name"]} - Version: {PUBLIC_SETTINGS["version"]}'
+    )
+    # self.app.setWindowIcon(QIcon(self.get_resource("close.svg")))
+    window.resize(500, 500)
+    window.show()
+    qdarktheme.setup_theme("auto", corner_shape="rounded")
+    return context.app.exec_()
 
 
 if __name__ == "__main__":
-    appctxt = AppContext()
-    exit_code = appctxt.run()
+    exit_code = run()
     sys.exit(exit_code)

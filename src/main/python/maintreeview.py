@@ -209,3 +209,74 @@ class TreeModel(QAbstractItemModel):
         for item in items:
             parent.add_child(item)
         self.endInsertRows()
+
+
+if __name__ == "__main__":
+    import sys
+    from PySide2.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QTreeWidget,
+        QTreeWidgetItem,
+        QInputDialog,
+    )
+    from PySide2.QtCore import Qt
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Sortable QTreeWidget")
+        self.setGeometry(100, 100, 400, 300)
+
+        # Create QTreeWidget
+        self.tree = QTreeWidget(self)
+        self.tree.setHeaderLabels(["Items"])
+        self.tree.setDragEnabled(True)
+        self.tree.setAcceptDrops(True)
+        self.tree.setDragDropMode(QTreeWidget.InternalMove)
+        self.tree.setSelectionMode(QTreeWidget.ExtendedSelection)
+        self.setCentralWidget(self.tree)
+
+        # Add context menu
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.open_menu)
+
+        # Add some items
+        for i in range(5):
+            item = QTreeWidgetItem(self.tree, [f"Item {i+1}"])
+            for j in range(3):
+                child = QTreeWidgetItem(item, [f"Subitem {i+1}.{j+1}"])
+
+        self.tree.expandAll()
+
+    def open_menu(self, position):
+        indexes = self.tree.selectedIndexes()
+        if len(indexes) > 0:
+            level = 0
+            index = indexes[0]
+            while index.parent().isValid():
+                index = index.parent()
+                level += 1
+
+        menu = QMenu()
+        rename_action = QAction("Rename...", self)
+        rename_action.triggered.connect(self.rename_item)
+
+        menu.exec_(self.tree.viewport().mapToGlobal(position))
+
+    def rename_item(self):
+        item = self.tree.currentItem()
+        if item:
+            new_name, ok = QInputDialog.getText(
+                self, "Rename Item", "Enter a new name:", text=item.text(0)
+            )
+            if ok and new_name:
+                item.setText(0, new_name)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

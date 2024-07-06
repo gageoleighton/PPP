@@ -5,6 +5,9 @@ from PySide2.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QRadioButton,
+    QPushButton,
+    QDialog,
+    QCommandLinkButton,
 )
 import math
 
@@ -15,6 +18,7 @@ class Concentration(QWidget):
         self.extinctions = []
         self.mass = []
         self.sequence = []
+        self.name = None
 
         layout = QHBoxLayout()
         self.setLayout(layout)
@@ -22,11 +26,21 @@ class Concentration(QWidget):
         leftLayout = QVBoxLayout()
         layout.addLayout(leftLayout)
 
+        self.calc_note = QLabel(
+            "Note: concentration is calculated for the selected protein:    "
+        )
+        leftLayout.addWidget(self.calc_note)
+
         self.inputLayout = QHBoxLayout()
+        self.absorbance_help = QPushButton("❓")
+        self.inputLayout.addWidget(self.absorbance_help)
+        self.absorbance_help.setToolTip("Calculation details...")
+        self.absorbance_help.clicked.connect(self.absorbanceHelpDialog)
         self.inputLabel = QLabel("Absorbance @ ")
         self.inputLayout.addWidget(self.inputLabel)
         self.absorbance_205 = QRadioButton("205")
         self.absorbance_205.toggled.connect(self.calcConc)
+        self.absorbance_205.setToolTip("Absorbance at 205 nm")
         self.absorbance_280 = QRadioButton("280 nm")
         self.absorbance_280.setChecked(True)
         self.inputLayout.addWidget(self.absorbance_205)
@@ -61,12 +75,18 @@ class Concentration(QWidget):
         layout.addLayout(rightLayout)
 
     def calcConc(self):
+        self.calc_note.setText(
+            f"Note: concentration is calculated for the selected protein: {self.name} ({round(self.mass/1000, 2)} KDa)."
+        )
         if self.input.text() == "":
             self.outputRLabel.setText("Concentration reduced (uM): ")
             self.outputCLabel.setText("Concentration disulfide (uM): ")
             self.outputRLabelmg.setText("Concentration reduced (mg/mL): ")
             self.outputCLabelmg.setText("Concentration disulfide (mg/mL): ")
         else:
+            # self.calc_note.setText(
+            #     f"Note: concentration is calculated for the selected protein: {self.name}."
+            # )
             if self.absorbance_205.isChecked():
                 self.calcConc205()
             elif self.absorbance_280.isChecked():
@@ -124,3 +144,35 @@ class Concentration(QWidget):
             "Concentration disulfide (mg/mL): "
             + str(round(self.mass * float(self.input.text()) / extinction_disulfide, 2))
         )
+
+    def absorbanceHelpDialog(self):
+        dlg = QDialog()
+        dlg.setWindowTitle("Absorbance")
+        label = QLabel(
+            "For protein with aromatic residues (W, Y, H), the absorbance at 280 nm from extinction coefficients are<br>\
+            calculated by <a href='https://biopython.org/'>BioPython</a>.<br>\
+            <br>\
+            While quantification of sequence specific peptide bond absorbance at 205 is based on the following publication:<br>\
+            <blockquote>Anthis, N. J., & Clore, G. M. (2013). <br>\
+            Sequence-specific determination of protein and peptide concentrations by absorbance at 205 nm. <br>\
+            Protein science : a publication of the Protein Society, 22(6), 851–858.<br>\
+            <a href='https://doi.org/10.1002/pro.2253'>https://doi.org/10.1002/pro.2253</a></blockquote>\
+            "
+        )
+        layout = QVBoxLayout()
+        label.setOpenExternalLinks(True)
+        dlg.setLayout(layout)
+        layout.addWidget(label)
+        dlg.exec()
+
+
+if __name__ == "__main__":
+    import sys
+    from PySide2.QtWidgets import QApplication, QMainWindow
+
+    app = QApplication(sys.argv)
+    window = QMainWindow()
+    conc = Concentration()
+    window.setCentralWidget(conc)
+    window.show()
+    sys.exit(app.exec_())

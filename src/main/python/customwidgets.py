@@ -1,22 +1,45 @@
-from PySide2.QtWidgets import QLineEdit, QDialog, QLabel, QVBoxLayout
+from PySide2.QtWidgets import QLineEdit, QDialog, QLabel, QHBoxLayout
 from PySide2.QtCore import Qt, Signal
+from PySide2.QtGui import QPixmap
+from base import context
+
 
 class ClickableLineEdit(QLineEdit):
-    clicked = Signal() # signal when the text entry is left clicked
+    clicked = Signal()  # signal when the text entry is left clicked
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton: 
+        if event.button() == Qt.MouseButton.LeftButton:
             # self.clicked.emit()
             self.deselect()
-        else: super().mousePressEvent(event)
+        else:
+            super().mousePressEvent(event)
 
-def aboutDialog(self):
-        dlg = QDialog()
-        dlg.setWindowTitle("About")
-        layout = QVBoxLayout()
-        textLabel = QLabel('Build and maintained by the Mueller group.\n\
-        Originally developed by Gage O. Leighton.\n\
-        A product of the NIH')
-        layout.addWidget(textLabel)
-        dlg.setLayout(layout)
-        dlg.exec()
+
+def aboutDialog():
+    dlg = QDialog()
+    dlg.setWindowTitle("About")
+    layout = QHBoxLayout()
+    textLabel = QLabel(
+        "Build and maintained by the <a href='https://www.niehs.nih.gov/research/atniehs/labs/gisbl/pi/nmr'>Mueller group at NIEHS</a>.<br>\
+        Originally developed by Gage O. Leighton.<br>\
+        A product of the NIH"
+    )
+    logo_path = context.get_resource("NIHLogo.png")
+    logo = QPixmap(logo_path)
+    logoLabel = QLabel()
+    logoLabel.setPixmap(logo)
+    layout.addWidget(logoLabel)
+    layout.addWidget(textLabel)
+    dlg.setLayout(layout)
+    dlg.exec()
+
+
+if __name__ == "__main__":
+    import sys
+    from PySide2 import QtWidgets
+
+    MainWindow = QtWidgets.QMainWindow()
+    dlg = aboutDialog()
+    MainWindow.setCentralWidget(dlg)
+    MainWindow.show()
+    sys.exit(context.app.exec_())
