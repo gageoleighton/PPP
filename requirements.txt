@@ -1,0 +1,15 @@
+altgraph==0.17.4
+biopython==1.83
+darkdetect==0.7.1
+fbs @ file:///Users/gageoleighton/Downloads/fbs_pro-1.1.0.tar.gz#sha256=07dfebb8328b29c5d9172f04dd5e8c7286822b18d45115dfc0377da17a60b9c9
+importlib_metadata==7.1.0
+macholib==1.16.3
+numpy==1.24.4
+packaging==24.0
+pyinstaller==6.5.0
+pyinstaller-hooks-contrib==2024.3
+pyqtdarktheme==2.1.0
+PySide2==5.15.2.1
+shiboken2==5.15.2.1
+shiboken6==6.5.2
+zipp==3.18.1
