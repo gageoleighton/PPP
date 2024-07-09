@@ -1,13 +1,14 @@
 import platform
 from fbs_runtime import PUBLIC_SETTINGS, platform
-from PySide2.QtCore import QSize, Qt
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QToolButton,
     QWidget,
 )
+
 
 class CustomTitleBar(QWidget):
     def __init__(self, parent):
@@ -16,7 +17,10 @@ class CustomTitleBar(QWidget):
         title_bar_layout = QHBoxLayout(self)
         title_bar_layout.setContentsMargins(1, 1, 1, 1)
         title_bar_layout.setSpacing(2)
-        self.title = QLabel(f'{PUBLIC_SETTINGS["app_name"]} - Version: {PUBLIC_SETTINGS["version"]}', self)
+        self.title = QLabel(
+            f'{PUBLIC_SETTINGS["app_name"]} - Version: {PUBLIC_SETTINGS["version"]}',
+            self,
+        )
         self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         # self.title.setStyleSheet(
         #     """
@@ -65,7 +69,7 @@ class CustomTitleBar(QWidget):
             self.close_button,
             self.max_button,
             self.normal_button,
-            self.min_button
+            self.min_button,
         ]
         for button in buttons:
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -78,12 +82,12 @@ class CustomTitleBar(QWidget):
                 """
             )
             # title_bar_layout.addWidget(button)
-        
-        if platform.name() == 'Mac' or 'Linux':
+
+        if platform.name() == "Mac" or "Linux":
             for button in buttons:
                 title_bar_layout.addWidget(button)
             title_bar_layout.addWidget(self.title)
-        elif platform.name() == 'Windows':
+        elif platform.name() == "Windows":
             title_bar_layout.addWidget(self.title)
             for button in buttons[::-1]:
                 title_bar_layout.addWidget(button)

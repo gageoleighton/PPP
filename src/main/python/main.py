@@ -5,7 +5,7 @@ from fbs_runtime import PUBLIC_SETTINGS
 
 import sys, os
 
-from PySide2.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QPushButton,
@@ -17,12 +17,11 @@ from PySide2.QtWidgets import (
     QTabWidget,
     QTableWidgetItem,
     QFileDialog,
-    QAction,
     QSizePolicy,
     QMessageBox,
 )
-from PySide2.QtGui import QIcon, QCloseEvent
-from PySide2.QtCore import Qt, QEvent, QItemSelectionModel
+from PySide6.QtGui import QIcon, QCloseEvent, QAction
+from PySide6.QtCore import Qt, QEvent, QItemSelectionModel
 
 import qdarktheme
 

@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QTableView, QApplication
-from PySide2.QtCore import Qt, QAbstractTableModel
-from PySide2.QtGui import QKeySequence
+from PySide6.QtWidgets import QTableView, QApplication
+from PySide6.QtCore import Qt, QAbstractTableModel
+from PySide6.QtGui import QKeySequence
 
 
 class summaryTable(QTableView):

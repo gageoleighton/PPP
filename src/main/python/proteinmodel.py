@@ -1,9 +1,23 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from biocalcs import ProteinAnalysis
 
+
 class ProteinModel(QtCore.QAbstractTableModel):
-    def __init__(self, protein, headers=['Name', 'Sequence', 'pI', 'Extinction', 'Weight', 'Aromaticity', 'Flexibility'], parent=None):
+    def __init__(
+        self,
+        protein,
+        headers=[
+            "Name",
+            "Sequence",
+            "pI",
+            "Extinction",
+            "Weight",
+            "Aromaticity",
+            "Flexibility",
+        ],
+        parent=None,
+    ):
         super(ProteinModel, self).__init__(parent)
         self.protein = protein
         self._headers = headers

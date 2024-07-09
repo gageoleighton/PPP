@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt, QSize, QAbstractListModel, QModelIndex
-from PySide2.QtWidgets import QListView, QSizePolicy, QListWidget, QListWidgetItem
+from PySide6.QtCore import Qt, QSize, QAbstractListModel, QModelIndex
+from PySide6.QtWidgets import QListView, QSizePolicy, QListWidget, QListWidgetItem
 
 
 class MainList(QListView):
