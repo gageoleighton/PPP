@@ -571,7 +571,7 @@ def run():
     window.resize(500, 500)
     window.show()
     qdarktheme.setup_theme("auto", corner_shape="rounded")
-    return context.app.exec_()
+    return context.app.exec()
 
 
 if __name__ == "__main__":
