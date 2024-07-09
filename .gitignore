@@ -3,3 +3,4 @@ target/
 .DS_Store
 Protein Param Pro.dmg
 Protein Param Pro/
+src/main/python/__pycache__
