@@ -5,10 +5,6 @@ Python script using PyQt6 to display a QListView with QAbstractListModel and but
 import sys
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 
 class ListModel(QAbstractListModel):
     def __init__(self, data=[], parent=None):

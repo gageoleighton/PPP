@@ -1,9 +1,5 @@
 from PySide6.QtWidgets import QTableWidget
 from PySide6.QtCore import Qt, QAbstractTableModel
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 
 class aaTab(QTableWidget):
     def __init__(self, *args, **kwargs):
