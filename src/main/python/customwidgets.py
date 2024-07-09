@@ -20,15 +20,17 @@ def aboutDialog():
     dlg.setWindowTitle("About")
     layout = QHBoxLayout()
     textLabel = QLabel(
-        "Build and maintained by the <a href='https://www.niehs.nih.gov/research/atniehs/labs/gisbl/pi/nmr'>Mueller group at NIEHS</a>.<br>\
-        Originally developed by Gage O. Leighton.<br>\
-        A product of the NIH"
+        "Built and maintained by Gage O. Leighton.<br>\
+        Please address all questions to <a href='mailto:gage.leighton@nih.gov'>gage.leighton@nih.gov</a>."
     )
+    # the <a href='https://www.niehs.nih.gov/research/atniehs/labs/gisbl/pi/nmr'>Mueller group at NIEHS</a>.<br>\
+    #     Originally developed by 
     logo_path = context.get_resource("NIHLogo.png")
     logo = QPixmap(logo_path)
     logoLabel = QLabel()
     logoLabel.setPixmap(logo)
-    layout.addWidget(logoLabel)
+    # layout.addWidget(logoLabel)
+    textLabel.setOpenExternalLinks(True)
     layout.addWidget(textLabel)
     dlg.setLayout(layout)
     dlg.exec()

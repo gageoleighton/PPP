@@ -8,7 +8,7 @@ class MainList(QListView):
         self._data = data or []
 
         self.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding
+            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding
         )
 
     def sizeHint(self):
