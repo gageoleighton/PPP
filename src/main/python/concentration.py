@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QLineEdit,
@@ -84,31 +84,35 @@ class Concentration(QWidget):
             self.outputRLabelmg.setText("Concentration reduced (mg/mL): ")
             self.outputCLabelmg.setText("Concentration disulfide (mg/mL): ")
         else:
-            # self.calc_note.setText(
-            #     f"Note: concentration is calculated for the selected protein: {self.name}."
-            # )
             if self.absorbance_205.isChecked():
                 self.calcConc205()
             elif self.absorbance_280.isChecked():
                 self.calcConc280()
 
     def calcConc280(self):
+        try:
+            reduced = float(self.input.text()) / self.extinctions[0]
+        except ZeroDivisionError:
+            reduced = 0
         self.outputRLabel.setText(
             "Concentration reduced (uM): "
-            + str(round(1000000 * float(self.input.text()) / self.extinctions[0], 2))
+            + str(round(1000000 * reduced, 2))
         )
-        self.outputCLabel.setText(
-            "Concentration disulfide (uM): "
-            + str(round(1000000 * float(self.input.text()) / self.extinctions[1], 2))
-        )
-
         self.outputRLabelmg.setText(
             "Concentration reduced (mg/mL): "
-            + str(round(self.mass * float(self.input.text()) / self.extinctions[0], 2))
+            + str(round(self.mass * reduced, 2))
+        )
+        try:
+            oxidized = float(self.input.text()) / self.extinctions[1]
+        except ZeroDivisionError:
+            oxidized = 0
+        self.outputCLabel.setText(
+            "Concentration disulfide (uM): "
+            + str(round(1000000 * oxidized, 2))
         )
         self.outputCLabelmg.setText(
             "Concentration disulfide (mg/mL): "
-            + str(round(self.mass * float(self.input.text()) / self.extinctions[1], 2))
+            + str(round(self.mass * oxidized, 2))
         )
 
     def calcConc205(self):
@@ -149,10 +153,11 @@ class Concentration(QWidget):
         dlg = QDialog()
         dlg.setWindowTitle("Absorbance")
         label = QLabel(
-            "For protein with aromatic residues (W, Y, H), the absorbance at 280 nm from extinction coefficients are<br>\
-            calculated by <a href='https://biopython.org/'>BioPython</a>.<br>\
+            "For proteins with aromatic residues (W, Y, H) which absorb strongly at 280 nm an extinction coefficients is<br>\
+            calculated by the package <a href='https://biopython.org/'>BioPython</a>.<br>\
             <br>\
-            While quantification of sequence specific peptide bond absorbance at 205 is based on the following publication:<br>\
+            While proteins lacking these residues, quantification of peptide bond absorbance at 205 is squence specific<br>\
+            and based on the following publication:<br>\
             <blockquote>Anthis, N. J., & Clore, G. M. (2013). <br>\
             Sequence-specific determination of protein and peptide concentrations by absorbance at 205 nm. <br>\
             Protein science : a publication of the Protein Society, 22(6), 851–858.<br>\
@@ -168,7 +173,7 @@ class Concentration(QWidget):
 
 if __name__ == "__main__":
     import sys
-    from PySide2.QtWidgets import QApplication, QMainWindow
+    from PySide6.QtWidgets import QApplication, QMainWindow
 
     app = QApplication(sys.argv)
     window = QMainWindow()

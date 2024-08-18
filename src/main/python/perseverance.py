@@ -1,10 +1,10 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 from biocalcs import protein
 
 
 class Perseverance:
     def __init__(self, parent=None):
-        self.settings = QtCore.QSettings()
+        self.settings = QtCore.QSettings("Scientific Studio", 'Protein Param Pro')
         # print(self.settings.value("protein0", type=str))
         if not self.settings.contains("protein0"):
             self.settings.setValue("protein0", "Ara h 3")
@@ -12,6 +12,7 @@ class Perseverance:
                 "sequence0",
                 "ISFRQQPEENACQFQRLNAQRPDNRIESEGGYIETWNPNNQEFECAGVALSRLVLRRNALRRPFYSNAPQEIFIQQGRGYFGLIFPGCPSTYEEPAQQGRRYQSQRPPRRLQEEDQSQQQQDSHQKVHRFNEGDLIAVPTGVAFWLYNDHDTDVVAVSLTDTNNNDNQLDQFPRRFNLAGNHEQEFLRYQQQSRQSRRRSLPYSPYSPQSQPRQEEREFSPRGQHSRRERAGQEEEHEGGNIFSGFTPEFLAQAFQVDDRQIVQNLRGENESEEQGAIVTVRGGLRILSPDRKRGADEEEEYDEDEYEYDEEDRRRGRGSRGSGNGIEETICTATVKKNIGRNRSPDIYNPQAGSLKTANELNLLILRWLGLSAEYGNLYRNALFVPHYNTNAHSIIYALRGRAHVQVVDSNGNRVYDEELQEGHVLVVPQNFAVAGKSQSDNFEYVAFKTDSRPSIANLAGENSVIDNLPEEVVANSYGLPREQARQLKNNNPFKFFVPPSQQSPRAVA",
             )
+            self.settings.setValue("proteinCount", 1)
         if not self.settings.contains("pppTheme"):
             self.settings.setValue("pppTheme", 0)
 

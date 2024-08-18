@@ -1,6 +1,6 @@
-from PySide2.QtGui import QContextMenuEvent
-from PySide2.QtWidgets import QTreeView, QSizePolicy, QMenu, QAction
-from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PySide6.QtGui import QContextMenuEvent
+from PySide6.QtWidgets import QTreeView, QSizePolicy, QMenu, QAction
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 
 
 class Node(object):

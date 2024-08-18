@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QLineEdit, QListView
+from PySide6.QtWidgets import QLineEdit, QListView
 
 
 class FilterWidget(QLineEdit):

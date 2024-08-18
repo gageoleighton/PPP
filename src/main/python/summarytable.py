@@ -1,10 +1,12 @@
-from PySide2.QtWidgets import QTableView, QApplication
-from PySide2.QtCore import Qt, QAbstractTableModel
-from PySide2.QtGui import QKeySequence
+from PySide6.QtWidgets import QTableView, QApplication
+from PySide6.QtCore import Qt, QAbstractTableModel
+from PySide6.QtGui import QKeySequence
+
+from base import preserves
 
 
 class summaryTable(QTableView):
-    def __init__(self, preserves, parent=None, *args, **kwargs):
+    def __init__(self, parent=None, *args, **kwargs):
         super(summaryTable, self).__init__(parent, *args, **kwargs)
         self.preserves = preserves
 
@@ -15,6 +17,7 @@ class summaryTable(QTableView):
             QTableView.keyPressEvent(self, event)
 
     def copy(self):
+        # Need to add notification of copy event
         selection = self.selectionModel()
         indexes = selection.selectedRows()
         if indexes:
@@ -38,7 +41,7 @@ class summaryTable(QTableView):
 
 
 class summaryModel(QAbstractTableModel):
-    def __init__(self, preserves=None, parent=None):
+    def __init__(self, parent=None):
         super(summaryModel, self).__init__(parent)
         self.preserves = preserves
         self._data = []
@@ -71,7 +74,10 @@ class summaryModel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
             protein = self._data[index.column()]
-            return protein.data[self.headers[index.row()]]
+            if self.headers[index.row()] in ["pI", 'Weight (KDa)', "Aromaticity"]:
+                return round(protein.data[self.headers[index.row()]], 2)
+            else:
+                return protein.data[self.headers[index.row()]]
 
     def rowCount(self, index):
         return len(self.headers)

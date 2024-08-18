@@ -3,8 +3,8 @@ Python script using PyQt6 to display a QListView with QAbstractListModel and but
 """
 
 import sys
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtWidgets import *
 
 class ListModel(QAbstractListModel):
     def __init__(self, data=[], parent=None):
@@ -28,12 +28,13 @@ class ListModel(QAbstractListModel):
             self._data.insert(index + 2, self._data.pop(index))
             self.dataChanged.emit(self.index(index), self.index(index + 1))
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("List with Move Buttons")
         layout = QVBoxLayout(self)
-        
+
         self.list_view = QListView()
         self.list_model = ListModel(["Item 1", "Item 2", "Item 3"])
         self.list_view.setModel(self.list_model)
@@ -54,6 +55,7 @@ class MainWindow(QWidget):
     def move_down(self):
         index = self.list_view.currentIndex().row()
         self.list_model.move_item_down(index)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
