@@ -84,31 +84,35 @@ class Concentration(QWidget):
             self.outputRLabelmg.setText("Concentration reduced (mg/mL): ")
             self.outputCLabelmg.setText("Concentration disulfide (mg/mL): ")
         else:
-            # self.calc_note.setText(
-            #     f"Note: concentration is calculated for the selected protein: {self.name}."
-            # )
             if self.absorbance_205.isChecked():
                 self.calcConc205()
             elif self.absorbance_280.isChecked():
                 self.calcConc280()
 
     def calcConc280(self):
+        try:
+            reduced = float(self.input.text()) / self.extinctions[0]
+        except ZeroDivisionError:
+            reduced = 0
         self.outputRLabel.setText(
             "Concentration reduced (uM): "
-            + str(round(1000000 * float(self.input.text()) / self.extinctions[0], 2))
+            + str(round(1000000 * reduced, 2))
         )
-        self.outputCLabel.setText(
-            "Concentration disulfide (uM): "
-            + str(round(1000000 * float(self.input.text()) / self.extinctions[1], 2))
-        )
-
         self.outputRLabelmg.setText(
             "Concentration reduced (mg/mL): "
-            + str(round(self.mass * float(self.input.text()) / self.extinctions[0], 2))
+            + str(round(self.mass * reduced, 2))
+        )
+        try:
+            oxidized = float(self.input.text()) / self.extinctions[1]
+        except ZeroDivisionError:
+            oxidized = 0
+        self.outputCLabel.setText(
+            "Concentration disulfide (uM): "
+            + str(round(1000000 * oxidized, 2))
         )
         self.outputCLabelmg.setText(
             "Concentration disulfide (mg/mL): "
-            + str(round(self.mass * float(self.input.text()) / self.extinctions[1], 2))
+            + str(round(self.mass * oxidized, 2))
         )
 
     def calcConc205(self):
@@ -169,7 +173,7 @@ class Concentration(QWidget):
 
 if __name__ == "__main__":
     import sys
-    from PySide2.QtWidgets import QApplication, QMainWindow
+    from PySide6.QtWidgets import QApplication, QMainWindow
 
     app = QApplication(sys.argv)
     window = QMainWindow()

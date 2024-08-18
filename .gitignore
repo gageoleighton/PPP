@@ -4,3 +4,6 @@ target/
 Protein Param Pro.dmg
 Protein Param Pro/
 src/main/python/__pycache__
+*secret.json
+sign/
+cache/

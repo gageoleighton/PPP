@@ -10,9 +10,11 @@ from customwidgets import ClickableLineEdit
 from proteinmodel import ProteinModel
 from biocalcs import *
 
+from base import preserves
+
 
 class inputWidget(QWidget):
-    def __init__(self, preserves):
+    def __init__(self):
         super().__init__()
         self.preserves = preserves
 

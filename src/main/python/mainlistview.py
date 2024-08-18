@@ -11,6 +11,13 @@ class MainList(QListView):
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding
         )
 
+        self.setSelectionMode(QListView.SelectionMode.ExtendedSelection)
+        self.setDragDropMode(QListView.DragDropMode.InternalMove)
+        self.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+
     def sizeHint(self):
         return QSize(150, 120)
 
@@ -46,11 +53,14 @@ class ListModel(QAbstractListModel):
         if index < len(self._data) - 1:
             self._data.insert(index + 1, self._data.pop(index))
             self.dataChanged.emit(self.index(index), self.index(index + 1))
+    
+    def supportedDropActions(self):
+        return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
 
 
 if __name__ == "__main__":
     from fbs_runtime.application_context.PySide2 import ApplicationContext
-    from PySide2.QtWidgets import QApplication, QMainWindow
+    from PySide6.QtWidgets import QApplication, QMainWindow
     import sys
     from biocalcs import protein
 
