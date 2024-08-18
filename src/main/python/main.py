@@ -578,7 +578,8 @@ def run():
     # self.app.setWindowIcon(QIcon(self.get_resource("close.svg")))
     window.resize(500, 500)
     window.show()
-    qdarktheme.setup_theme("auto", corner_shape="rounded")
+    # qdarktheme.setup_theme("auto")
+    # qdarktheme.setup_theme("auto", corner_shape="rounded")
     return context.app.exec()
 
 

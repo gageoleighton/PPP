@@ -20,11 +20,12 @@ def aboutDialog():
     dlg.setWindowTitle("About")
     layout = QHBoxLayout()
     textLabel = QLabel(
-        "Built and maintained by Gage O. Leighton.<br>\
-        Please address all questions to <a href='mailto:gage.leighton@nih.gov'>gage.leighton@nih.gov</a>."
+        "Coded and developed by Gage O. Leighton.<br>\
+        Please contact me with any questions or comments.<br>\
+        gageoleighton@gmail.com"
     )
     # the <a href='https://www.niehs.nih.gov/research/atniehs/labs/gisbl/pi/nmr'>Mueller group at NIEHS</a>.<br>\
-    #     Originally developed by 
+    #     Originally developed by
     logo_path = context.get_resource("NIHLogo.png")
     logo = QPixmap(logo_path)
     logoLabel = QLabel()
@@ -38,7 +39,7 @@ def aboutDialog():
 
 if __name__ == "__main__":
     import sys
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     MainWindow = QtWidgets.QMainWindow()
     dlg = aboutDialog()
