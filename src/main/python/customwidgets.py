@@ -21,7 +21,7 @@ def aboutDialog():
     layout = QHBoxLayout()
     textLabel = QLabel(
         "Built and maintained by Gage O. Leighton.<br>\
-        Please address all questions to <a href='mailto:gage.leighton@nih.gov'>gage.leighton@nih.gov</a>."
+        Please address all questions to <a href='mailto:gageoleighton@gmail.com'>gageoleighton@gmail.com</a>."
     )
     # the <a href='https://www.niehs.nih.gov/research/atniehs/labs/gisbl/pi/nmr'>Mueller group at NIEHS</a>.<br>\
     #     Originally developed by 
