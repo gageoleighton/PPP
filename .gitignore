@@ -7,3 +7,5 @@ src/main/python/__pycache__
 *secret.json
 sign/
 cache/
+build.py
+notary.sh
