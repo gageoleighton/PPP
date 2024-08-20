@@ -1,5 +1,5 @@
 Protein Param Pro (PPP) is a simple program for storing and retrieving protein sequences as a way for me to learn how to code in Python with the PyQt/PySide package.
-All user data is only stored on your local device. However, errors are reported to sentry so that I can assess needed bugfixes. This may pass protein name and sequence 
+All user data is only stored on your local device. However, errors are reported to sentry so that I can assess needed bugfixes. This may pass along protein name and sequence.
 
 # Usage
 
