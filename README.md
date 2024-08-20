@@ -1,4 +1,5 @@
 Protein Param Pro (PPP) is a simple program for storing and retrieving protein sequences as a way for me to learn how to code in Python with the PyQt/PySide package.
+
 All user data is only stored on your local device. However, errors are reported to sentry so that I can assess needed bugfixes. This may pass along protein name and sequence.
 
 # Usage
@@ -36,6 +37,7 @@ PPP should run on any macOS with Ventura (13) or newer. Support for older macs i
 
 Due to the requirements set by Apple for code signing apps ($99/year) a message will probably appear reporting PPP as "corrupt".
 If so, please run the following command in terminal before mounting the dmg:
+
 `xattr -cr /path/to/protein.param.pro.dmg`
 
 On subsequent launches you should not need to do this again unless updating to a newer version.
