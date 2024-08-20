@@ -16,7 +16,7 @@ All user data is only stored on your local device. However, errors are reported 
 * Select and ctrl+C summary table element to copy.
   * Note: you must first deselect the row headers then reselect to properly copy.
 
-#3 Roadmap
+## Roadmap
 * Detect when updates are available.
 * Option to use program without sentry integration.
 * Arrange and show list in collapsable folders.
