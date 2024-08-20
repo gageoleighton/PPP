@@ -27,7 +27,7 @@ All user data is only stored on your local device. However, errors are reported 
  * Disorder/order plot.
  * Summary of amino acids and distribution.
 
-#Installation
+# Installation
 
 ## Linux
 To be released.
