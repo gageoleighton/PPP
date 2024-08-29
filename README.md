@@ -20,7 +20,7 @@ All user data is only stored on your local device. However, errors are reported 
 * Option to use program without sentry integration.
 * Arrange and show list in collapsable folders.
 * On "Export" only export entries that are selected.
-* Add notification on sucessful copy of summary table items.
+* ~~Add notification on sucessful copy of summary table items.~~
 * Additional display of protein information including:
  * Rolling isoelectric point plot.
  * Disorder/order plot.

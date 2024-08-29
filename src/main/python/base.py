@@ -11,6 +11,7 @@ class AppContext(ApplicationContext):
         if is_frozen():
             result.append(self.sentry_exception_handler)
         return result
+    
     @cached_property
     def sentry_exception_handler(self):
         return SentryExceptionHandler(

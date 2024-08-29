@@ -36,7 +36,6 @@ class summaryTable(QTableView):
                     # print(item)
                     if item:
                         text += str(item)
-            print(text)
             QApplication.clipboard().setText(text)
 
 

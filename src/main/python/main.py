@@ -3,7 +3,7 @@
 from base import context, preserves
 from fbs_runtime import PUBLIC_SETTINGS
 
-import sys, os
+import sys, os, requests, webbrowser
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -30,11 +30,14 @@ from customtitlebar import CustomTitleBar
 
 from inputwidget import inputWidget
 from filterwidget import FilterWidget
+from settingsWindow import SettingsWindow
 
 # from maintreeview import MainTreeView, TreeModel, Node
 from summarytable import summaryTable, summaryModel
 from aatab import aaTab
 from concentration import Concentration
+
+from statusbar import StatusBar
 
 from mainlistview import MainList, ListModel
 from biocalcs import *
@@ -88,18 +91,27 @@ class MainWindow(QMainWindow):
         delete_save_action.setShortcut("Ctrl+D")
         delete_save_action.triggered.connect(preserves.delete_settings)
 
+        settings_action = QAction("&Settings", self)
+        settings_action.setShortcut("Ctrl+P")
+        self.settingsWindow = SettingsWindow()
+        settings_action.triggered.connect(self.settingsWindow.show)
+
+        check_updates_action = QAction("&Check for updates", self)
+        check_updates_action.setShortcut("Ctrl+U")
+        check_updates_action.triggered.connect(self.check_for_updates)
+
         # exit_action = QAction(" E&xit", self)
         # exit_action.setShortcut("Ctrl+Q")
         # exit_action.triggered.connect(lambda: self.closeEvent(QCloseEvent()))
 
         file_menu.addActions(
-            [import_action, export_action, save_action, delete_save_action]
+            [import_action, export_action, save_action, delete_save_action, settings_action]
         )
 
         help_menu = menu.addMenu("&Help")
         about_action = QAction("&About...", self)
         about_action.triggered.connect(aboutDialog)
-        help_menu.addActions([about_action])
+        help_menu.addActions([about_action, check_updates_action])
 
         # Main widget ---------------------------------------------------
 
@@ -235,6 +247,9 @@ class MainWindow(QMainWindow):
         self.tabWidget.addTab(self.concentration, "Concentration")
 
         # self.proteinModel.layoutChanged.emit()
+        self.statusBar = StatusBar(self)
+        self.setStatusBar(self.statusBar)
+        QApplication.clipboard().dataChanged.connect(lambda message="Coppied!": self.statusBar.set_message(message))
 
         self.setCentralWidget(self.mainWidget)
 
@@ -266,7 +281,32 @@ class MainWindow(QMainWindow):
                 event.accept()
         else:
             event.accept()
+    
+    def check_for_updates(self):
+        dlg = QMessageBox()
 
+        url = "https://api.github.com/gageoleighton/PPP/releases/latest"
+        response = requests.get(url)
+        # version = response.url.split('/').pop()
+        version = response.json()['message']
+        if version == 'latest' or 'Not Found':
+            self.statusBar.set_message('Could not check for updates.')
+            dlg.setText('Could not check for updates.')
+            dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        else:
+            if version > PUBLIC_SETTINGS['version']:
+                dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                dlg.setDefaultButton(QMessageBox.StandardButton.Yes)
+                self.statusBar.set_message(f"Latest version: {version}. Current version: {PUBLIC_SETTINGS['version']}")
+                dlg.setText(f"New version available: {version}. Current version: {PUBLIC_SETTINGS['version']}\nDo you want to download the latest version?")
+            else:
+                dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                self.statusBar.set_message(f"Current version: {PUBLIC_SETTINGS['version']} is the latest version.")
+                dlg.setText(f"Current version: {PUBLIC_SETTINGS['version']} is the latest version.")
+        ret = dlg.exec()
+        if ret == QMessageBox.StandardButton.Yes:
+            webbrowser.open(url)
+    
     # def changeEvent(self, event) -> None:
     #     """
     #     Handles the change event for the window state.
@@ -282,6 +322,7 @@ class MainWindow(QMainWindow):
     #     Returns:
     #         None
     #     """
+
     #     if event.type() == QEvent.Type.WindowStateChange:
     #         self.title_bar.window_state_changed(self.windowState())
     #     super().changeEvent(event)
@@ -557,15 +598,17 @@ class MainWindow(QMainWindow):
             self, "Import data", "", "Fasta Files (*.fasta)"
         )
         if fileName:
-            with open(fileName, "r") as f:
+            with open(fileName, "r", encoding="utf-8") as f:
                 for line in f:
                     if line[0] == ">":
                         name = line[1:].strip()
-                        sequence = ""
+                        sequence = None
                     else:
-                        sequence += line.strip()
-                self.listModel._data.append(protein(name, sequence))
+                        sequence = line.strip()
+                    if name and sequence:
+                        self.listModel._data.append(protein(name, sequence))
                 self.listModel.layoutChanged.emit()
+                print(name)
 
 
 def run():
