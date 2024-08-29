@@ -285,11 +285,12 @@ class MainWindow(QMainWindow):
     def check_for_updates(self):
         dlg = QMessageBox()
 
-        url = "https://api.github.com/gageoleighton/PPP/releases/latest"
+        url = "https://github.com/gageoleighton/PPP/releases/latest"
         response = requests.get(url)
-        # version = response.url.split('/').pop()
-        version = response.json()['message']
-        if version == 'latest' or 'Not Found':
+        version = response.url.split('/').pop()
+        print(version)
+        # version = response.json()['message']
+        if version == 'latest' or version == 'Not Found':
             self.statusBar.set_message('Could not check for updates.')
             dlg.setText('Could not check for updates.')
             dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
@@ -298,11 +299,11 @@ class MainWindow(QMainWindow):
                 dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
                 dlg.setDefaultButton(QMessageBox.StandardButton.Yes)
                 self.statusBar.set_message(f"Latest version: {version}. Current version: {PUBLIC_SETTINGS['version']}")
-                dlg.setText(f"New version available: {version}. Current version: {PUBLIC_SETTINGS['version']}\nDo you want to download the latest version?")
+                dlg.setText(f"New version available: {version}. Current version: {PUBLIC_SETTINGS['version']}\nDo you want to open a link to the latest version?")
             else:
                 dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
-                self.statusBar.set_message(f"Current version: {PUBLIC_SETTINGS['version']} is the latest version.")
-                dlg.setText(f"Current version: {PUBLIC_SETTINGS['version']} is the latest version.")
+                self.statusBar.set_message(f"Current version: {PUBLIC_SETTINGS['version']} is the latest.")
+                dlg.setText(f"Current version: {PUBLIC_SETTINGS['version']} is the latest.")
         ret = dlg.exec()
         if ret == QMessageBox.StandardButton.Yes:
             webbrowser.open(url)
