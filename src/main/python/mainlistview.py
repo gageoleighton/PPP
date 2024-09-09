@@ -1,25 +1,6 @@
 from PySide6.QtCore import Qt, QSize, QAbstractListModel, QModelIndex
 from PySide6.QtWidgets import QListView, QSizePolicy, QListWidget, QListWidgetItem
-
-
-class MainList(QListView):
-    def __init__(self, *args, data=None, **kwargs):
-        super(MainList, self).__init__(*args, **kwargs)
-        self._data = data or []
-
-        self.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding
-        )
-
-        self.setSelectionMode(QListView.SelectionMode.ExtendedSelection)
-        self.setDragDropMode(QListView.DragDropMode.InternalMove)
-        self.setDefaultDropAction(Qt.DropAction.MoveAction)
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
-
-    def sizeHint(self):
-        return QSize(150, 120)
+from biocalcs import protein
 
 
 class ListModel(QAbstractListModel):
@@ -56,6 +37,50 @@ class ListModel(QAbstractListModel):
     
     def supportedDropActions(self):
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
+
+class MainList(QListView):
+    def __init__(self, *args, data=None, **kwargs):
+        super(MainList, self).__init__(*args, **kwargs)
+        # self._data = data or []
+        self.listModel = ListModel()
+
+        self.setModel(self.listModel)
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding
+        )
+
+        self.setSelectionMode(QListView.SelectionMode.ExtendedSelection)
+        self.setDragDropMode(QListView.DragDropMode.InternalMove)
+        self.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+
+    def sizeHint(self):
+        return QSize(150, 120)
+
+    def add_item(self, name, sequence) -> None:
+        # name = self.parent.parent.inputWidget.proteinName.text()
+        # sequence = self.parent.inputWidget.sequenceEdit.text()
+        if name and sequence:
+            self.listModel._data.append(protein(name,sequence))
+            # self.listModel._data.append(protein(name, sequence))
+            self.listModel.layoutChanged.emit()
+
+    def delete_item(self) -> None:
+        indexes = self.selectedIndexes()
+        if indexes:
+            if len(indexes) > 1:
+                for item in reversed(sorted(self.listWidget.selectedIndexes())):
+                    del self.listModel._data[item.row()]
+            else:
+                del self.listModel._data[indexes[0].row()]
+
+            self.layoutChanged.emit()
+            self.clearSelection()
+
+
 
 
 if __name__ == "__main__":

@@ -18,13 +18,13 @@ class Perseverance:
 
     def save_settings(self, main_self):
         print("Saved!")
-        count = len(main_self.listModel._data)
+        count = len(main_self.mainWidget.listWidget.listModel._data)
         self.settings.setValue("proteinCount", count)
         print(count)
         for i in range(count):
-            self.settings.setValue(f"protein{i}", main_self.listModel._data[i].name)
+            self.settings.setValue(f"protein{i}", main_self.mainWidget.listModel._data[i].name)
             self.settings.setValue(
-                f"sequence{i}", main_self.listModel._data[i].sequence
+                f"sequence{i}", main_self.mainWidget.listModel._data[i].sequence
             )
         self.settings.setValue("pppTheme", main_self.pppTheme)
         print(self.settings.value("protein0", type=str))
@@ -40,7 +40,7 @@ class Perseverance:
         for i in range(count):
             name = self.settings.value(f"protein{i}", type=str)
             sequence = self.settings.value(f"sequence{i}", type=str)
-            main_self.listModel._data.append(protein(name, sequence))
+            main_self.listWidget.listModel._data.append(protein(name, sequence))
         main_self.pppTheme = self.settings.value("pppTheme", type=int)
 
     def len(self):
