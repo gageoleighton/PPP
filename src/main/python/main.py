@@ -482,8 +482,9 @@ class MainWindow(QMainWindow):
         """
         name = self.inputWidget.proteinName.text()
         sequence = self.inputWidget.sequenceEdit.text()
+        color = self.inputWidget.colorButton.color()
         if name and sequence:
-            self.listModel._data.append(protein(name, sequence))
+            self.listModel._data.append(protein(name, sequence, color))
             self.listModel.layoutChanged.emit()
 
     # def adjust_up(self):
@@ -619,11 +620,10 @@ def run():
     window.setWindowTitle(
         f'{PUBLIC_SETTINGS["app_name"]} - Version: {PUBLIC_SETTINGS["version"]}'
     )
-    # self.app.setWindowIcon(QIcon(self.get_resource("close.svg")))
     window.resize(500, 500)
     window.show()
-    # qdarktheme.setup_theme("auto")
-    # qdarktheme.setup_theme("auto", corner_shape="rounded")
+    # qdarktheme.setup_theme(['light', 'dark'][preserves.settings.value("pppTheme", type=int)])
+    qdarktheme.setup_theme("auto")
     return context.app.exec()
 
 

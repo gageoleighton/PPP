@@ -13,9 +13,10 @@ def rolling_pi(sequence, bin):
 #     weight = calc_mw(sequence)
 
 class protein():
-    def __init__(self, name, sequence):
+    def __init__(self, name, sequence, color):
         self.name = name or "Undefined"
         self.sequence = sequence
+        self.color = color
         if sequence:
             self.analysis = ProteinAnalysis(sequence)
             self.weight = self.analysis.molecular_weight()

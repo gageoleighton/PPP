@@ -12,6 +12,7 @@ class Perseverance:
                 "sequence0",
                 "MAKLTILVALALFLLAAHASARQQWELQGDRRCQSQLERANLRPCEQHLMQKIQRDEDSYERDPYSPSQDPYSPSPYDRRGAGSSQHQERCCNELNEFENNQRCMCEALQQIMENQSDRLQGRQQEQQFKRELRNLPQQCGLRAPQRCDLDVESGG",
             )
+            self.settings.setValue("color0", "#62C6F2")
             self.settings.setValue("proteinCount", 1)
         if not self.settings.contains("pppTheme"):
             self.settings.setValue("pppTheme", 0)
@@ -26,6 +27,10 @@ class Perseverance:
             self.settings.setValue(
                 f"sequence{i}", main_self.listModel._data[i].sequence
             )
+            if main_self.listModel._data[i].color == "":
+                self.settings.setValue(f"color{i}", "#FFFFFF")
+            else:
+                self.settings.setValue(f"color{i}", main_self.listModel._data[i].color)
         self.settings.setValue("pppTheme", main_self.pppTheme)
         print(self.settings.value("protein0", type=str))
 
@@ -40,7 +45,10 @@ class Perseverance:
         for i in range(count):
             name = self.settings.value(f"protein{i}", type=str)
             sequence = self.settings.value(f"sequence{i}", type=str)
-            main_self.listModel._data.append(protein(name, sequence))
+            color = self.settings.value(f"color{i}", type=str)
+            if color == "":
+                color = "white"
+            main_self.listModel._data.append(protein(name, sequence, color))
         main_self.pppTheme = self.settings.value("pppTheme", type=int)
 
     def len(self):
