@@ -17,15 +17,15 @@ All user data is only stored on your local device. However, errors are reported 
   * Note: you must first deselect the row headers then reselect to properly copy.
 
 ## Roadmap
-* Detect when updates are available.
-* Option to use program without sentry integration.
-* Arrange and show list in collapsable folders.
-* On "Export" only export entries that are selected.
+- [x] Detect when updates are available.
+- [ ] Option to use program without sentry integration.
+- [ ] Arrange and show list in collapsable folders.
+- [ ] On "Export" only export entries that are selected.
 * ~~Add notification on sucessful copy of summary table items.~~
 * Additional display of protein information including:
- * Rolling isoelectric point plot.
- * Disorder/order plot.
- * Summary of amino acids and distribution.
+  - [ ] Rolling isoelectric point plot.
+  - [ ] Disorder/order plot.
+  - [ ] Summary of amino acids and distribution.
 
 # Installation
 
@@ -38,7 +38,7 @@ PPP should run on any macOS with Ventura (13) or newer. Support for older macs i
 Due to the requirements set by Apple for code signing apps ($99/year) a message will probably appear reporting PPP as "corrupt".
 If so, please run the following command in terminal before mounting the dmg:
 
-`xattr -cr /path/to/protein.param.pro.dmg`
+`xattr -cr /path/to/protein.param.pro.app`
 
 On subsequent launches you should not need to do this again unless updating to a newer version.
 
