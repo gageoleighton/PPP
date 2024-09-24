@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLineEdit, QListView
+from PySide6.QtWidgets import QLineEdit, QListView, QPushButton
 
 
 class FilterWidget(QLineEdit):
@@ -20,6 +20,7 @@ class FilterWidget(QLineEdit):
                     listWidget.setRowHidden(index, False)
                 else:
                     listWidget.setRowHidden(index, True)
+            # print(label.text() for label in self.parentWidget().findChildren(QPushButton))
         else:
             for index in range(model.rowCount(0)):
                 listWidget.setRowHidden(index, False)

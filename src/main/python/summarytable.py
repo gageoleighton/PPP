@@ -64,8 +64,8 @@ class summaryModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return str(self.headers[section])
+            # if orientation == Qt.Orientation.Horizontal:
+            #     return str(self.headers[section])
 
             if orientation == Qt.Orientation.Vertical:
                 return str(self.headers[section])

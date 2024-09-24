@@ -1,4 +1,5 @@
 from PySide6 import QtCore
+from PySide6.QtWidgets import QMessageBox
 from biocalcs import protein
 
 
@@ -37,8 +38,25 @@ class Perseverance:
         print(self.settings.value("protein0", type=str))
 
     def delete_settings(self):
-        print("Deleted!")
-        self.settings.clear()
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Delete Settings?")
+        dlg.setText("Are you sure you want to delete all settings?")
+        dlg.setIcon(QMessageBox.Icon.Question)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        dlg.setDefaultButton(QMessageBox.StandardButton.No)
+        ret = dlg.exec()
+        if ret == QMessageBox.StandardButton.Yes:
+            for i in range(self.settings.value("proteinCount", type=int)):
+                self.settings.remove(f"protein{i}")
+                self.settings.remove(f"sequence{i}")
+                self.settings.remove(f"color{i}")
+            self.settings.clear()
+            self.settings.setValue("proteinCount", 0)
+            self.settings.setValue("needs_save", False)
+            print("Deleted!")
+
 
     def load_settings(self, main_self):
         # print("Loaded!")

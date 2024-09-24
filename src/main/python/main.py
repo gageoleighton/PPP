@@ -3,7 +3,7 @@
 from base import context, preserves
 from fbs_runtime import PUBLIC_SETTINGS
 
-import sys, os, requests, webbrowser
+import sys, os, requests, webbrowser, pickle
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QWidget,
     QListView,
-    QTableWidget,
     QTabWidget,
     QTableWidgetItem,
     QFileDialog,
@@ -21,12 +20,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QSplitter,
 )
-from PySide6.QtGui import QIcon, QCloseEvent, QAction
-from PySide6.QtCore import Qt, QEvent, QItemSelectionModel
+from PySide6.QtGui import QAction
+from PySide6.QtCore import Qt
 
 import qdarktheme
 
-from customtitlebar import CustomTitleBar
+# from customtitlebar import CustomTitleBar
 
 from inputwidget import inputWidget
 from filterwidget import FilterWidget
@@ -42,7 +41,7 @@ from statusbar import StatusBar
 from mainlistview import MainList, ListModel
 from biocalcs import *
 
-from Bio import SeqIO
+# from Bio import SeqIO
 
 from customwidgets import *
 
@@ -87,9 +86,9 @@ class MainWindow(QMainWindow):
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(lambda: preserves.save_settings(self))
 
-        delete_save_action = QAction("&Delete Save", self)
+        delete_save_action = QAction("&Delete All...", self)
         delete_save_action.setShortcut("Ctrl+D")
-        delete_save_action.triggered.connect(preserves.delete_settings)
+        delete_save_action.triggered.connect(self.delete_all)
 
         settings_action = QAction("&Settings", self)
         settings_action.setShortcut("Ctrl+P")
@@ -489,6 +488,12 @@ class MainWindow(QMainWindow):
         self.listWidget.clearSelection()
         self.summaryModel._data = []
         self.summaryModel.layoutChanged.emit()
+    
+    def delete_all(self) -> None:
+        preserves.delete_settings()
+        self.listModel._data = []
+        self.listModel.layoutChanged.emit()
+
 
     def add_item(self) -> None:
         """
@@ -520,43 +525,23 @@ class MainWindow(QMainWindow):
     #             self.listModel._data.insert(item.row()-1, self.listModel._data.pop(item.row()))
 
     def move_up(self) -> None:
-        """
-        Handles the move up event.
-
-        This function is called when the move up button is clicked. It gets the selected index from the list widget and moves it up in the list model.
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-        index = self.listWidget.currentIndex()
-        self.listModel.move_item_up(index.row())
-        self.listWidget.clearSelection()
-        self.listWidget.setCurrentIndex(
-            self.listWidget.model().index(index.row() - 1, 0)
-        )
+        if self.filterList.text() == "":
+            index = self.listWidget.currentIndex()
+            self.listModel.move_item_up(index.row())
+            self.listWidget.clearSelection()
+            self.listWidget.setCurrentIndex(
+                self.listWidget.model().index(index.row() - 1, 0)
+            )
         # self.listWidget.setCurrentIndex(self.listWidget.model().index(index.row()-1, 0), QItemSelectionModel.SelectionFlag.Select)
 
     def move_down(self) -> None:
-        """
-        Handles the move down event.
-
-        This function is called when the move down button is clicked. It gets the selected index from the list widget and moves it down in the list model.
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-        index = self.listWidget.currentIndex()
-        self.listModel.move_item_down(index.row())
-        self.listWidget.clearSelection()
-        self.listWidget.setCurrentIndex(
-            self.listWidget.model().index(index.row() + 1, 0)
-        )
+        if self.filterList.text() == "":
+            index = self.listWidget.currentIndex()
+            self.listModel.move_item_down(index.row())
+            self.listWidget.clearSelection()
+            self.listWidget.setCurrentIndex(
+                self.listWidget.model().index(index.row() + 1, 0)
+            )
 
     def delete_item(self) -> None:
         """
@@ -583,55 +568,52 @@ class MainWindow(QMainWindow):
 
     # Export data as a fasta file
     def export_data(self) -> None:
-        """
-        Handles the export data event.
-
-        This function is called when the export data button is clicked. It gets the selected indexes from the list widget and exports them to a fasta file.
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
         # dialog for saving file
-        fileName, _ = QFileDialog.getSaveFileName(
-            self, "Export data", "", "Fasta Files (*.fasta)"
-        )
-        if fileName:
-            with open(fileName, "w") as f:
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Export data")
+        file_dialog.setNameFilters(["Fasta Files (*.fasta)", "Protein Param Pro (*.P3)"])
+        file_dialog.selectNameFilter("Protein Param Pro (*.P3)")
+        file_dialog.setDefaultSuffix(".P3")
+        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+
+        # file_dialog.exec()
+        if file_dialog.exec() == QDialog.Accepted:
+            fileName = file_dialog.selectedFiles()[0]
+            with open(fileName, "wb") as f:
                 data = self.listModel._data
-                for item in data:
-                    f.write(f">{item.name}\n{item.sequence}\n")
+                if fileName.endswith(".P3"):
+                    pickle.dump(data, f)
+                elif fileName.endswith(".fasta"):
+                    for item in data:
+                        f.write(f">{item.name}\n{item.sequence}\n")
 
     # Import data from a fasta file
     def import_data(self) -> None:
-        """
-        Handles the import data event.
-
-        This function is called when the import data button is clicked. It gets the selected indexes from the list widget and imports them from a fasta file.
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
         # dialog for loading file
-        fileName, _ = QFileDialog.getOpenFileName(
-            self, "Import data", "", "Fasta Files (*.fasta)"
-        )
-        if fileName:
-            with open(fileName, "r", encoding="utf-8") as f:
-                for line in f:
-                    if line[0] == ">":
-                        name = line[1:].strip()
-                        sequence = None
-                    else:
-                        sequence = line.strip()
-                    if name and sequence:
-                        self.listModel._data.append(protein(name, sequence))
-                self.listModel.layoutChanged.emit()
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Import data")
+        file_dialog.setNameFilters(["Fasta Files (*.fasta)", "Protein Param Pro (*.P3)"])
+        file_dialog.selectNameFilter("Fasta Files (*.fasta)")
+        # file_dialog.exec()
+        if file_dialog.exec() == QDialog.Accepted:
+            fileName = file_dialog.selectedFiles()[0]
+            if fileName.endswith(".fasta"):
+                with open(fileName, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line[0] == ">":
+                            name = line[1:].strip()
+                            sequence = None
+                        else:
+                            sequence = line.strip()
+                        if name and sequence:                            
+                            self.listModel._data.append(protein(name, sequence, color="white"))
+            elif fileName.endswith(".P3"):
+                with open(fileName, "rb") as f:
+                    data = pickle.load(f)
+                    for item in data:
+                        print(item)
+                        self.listModel._data.append(protein(item.name, item.sequence, color=item.color))
+            self.listModel.layoutChanged.emit()
 
 
 def run():
