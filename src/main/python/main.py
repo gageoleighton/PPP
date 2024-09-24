@@ -105,7 +105,13 @@ class MainWindow(QMainWindow):
         # exit_action.triggered.connect(lambda: self.closeEvent(QCloseEvent()))
 
         file_menu.addActions(
-            [import_action, export_action, save_action, delete_save_action, settings_action]
+            [
+                import_action,
+                export_action,
+                save_action,
+                delete_save_action,
+                settings_action,
+            ]
         )
 
         help_menu = menu.addMenu("&Help")
@@ -249,7 +255,9 @@ class MainWindow(QMainWindow):
         # self.proteinModel.layoutChanged.emit()
         self.statusBar = StatusBar(self)
         self.setStatusBar(self.statusBar)
-        QApplication.clipboard().dataChanged.connect(lambda message="Coppied!": self.statusBar.set_message(message))
+        QApplication.clipboard().dataChanged.connect(
+            lambda message="Coppied!": self.statusBar.set_message(message)
+        )
 
         self.setCentralWidget(self.mainWidget)
 
@@ -264,50 +272,64 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
         if preserves.settings.value("proteinCount", type=int) != len(
             self.listModel._data
-        ):
-            dlg = QMessageBox()
-            dlg.setWindowTitle("Quit")
-            dlg.setText("Save before quitting?")
-            dlg.setIcon(QMessageBox.Icon.Question)
-            dlg.setStandardButtons(
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-            )
-            dlg.setDefaultButton(QMessageBox.StandardButton.No)
-            ret = dlg.exec()
-            if ret == QMessageBox.StandardButton.Yes:
-                preserves.save_settings(self)
-                event.accept()
-            else:
-                event.accept()
+        ) or preserves.settings.value("needs_save", type=bool):
+            self.closeDialog(event)
         else:
             event.accept()
-    
+
+    def closeDialog(self, event):
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Quit")
+        dlg.setText("Save before quitting?")
+        dlg.setIcon(QMessageBox.Icon.Question)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        dlg.setDefaultButton(QMessageBox.StandardButton.No)
+        ret = dlg.exec()
+        preserves.settings.setValue("needs_save", False)
+        if ret == QMessageBox.StandardButton.Yes:
+            preserves.save_settings(self)
+            event.accept()
+        else:
+            event.accept()
+
     def check_for_updates(self):
         dlg = QMessageBox()
 
         url = "https://github.com/gageoleighton/PPP/releases/latest"
         response = requests.get(url)
-        version = response.url.split('/').pop()
+        version = response.url.split("/").pop()
         print(version)
         # version = response.json()['message']
-        if version == 'latest' or version == 'Not Found':
-            self.statusBar.set_message('Could not check for updates.')
-            dlg.setText('Could not check for updates.')
+        if version == "latest" or version == "Not Found":
+            self.statusBar.set_message("Could not check for updates.")
+            dlg.setText("Could not check for updates.")
             dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
         else:
-            if version > PUBLIC_SETTINGS['version']:
-                dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if version > PUBLIC_SETTINGS["version"]:
+                dlg.setStandardButtons(
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                )
                 dlg.setDefaultButton(QMessageBox.StandardButton.Yes)
-                self.statusBar.set_message(f"Latest version: {version}. Current version: {PUBLIC_SETTINGS['version']}")
-                dlg.setText(f"New version available: {version}. Current version: {PUBLIC_SETTINGS['version']}\nDo you want to open a link to the latest version?")
+                self.statusBar.set_message(
+                    f"Latest version: {version}. Current version: {PUBLIC_SETTINGS['version']}"
+                )
+                dlg.setText(
+                    f"New version available: {version}. Current version: {PUBLIC_SETTINGS['version']}\nDo you want to open a link to the latest version?"
+                )
             else:
                 dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
-                self.statusBar.set_message(f"Current version: {PUBLIC_SETTINGS['version']} is the latest.")
-                dlg.setText(f"Current version: {PUBLIC_SETTINGS['version']} is the latest.")
+                self.statusBar.set_message(
+                    f"Current version: {PUBLIC_SETTINGS['version']} is the latest."
+                )
+                dlg.setText(
+                    f"Current version: {PUBLIC_SETTINGS['version']} is the latest."
+                )
         ret = dlg.exec()
         if ret == QMessageBox.StandardButton.Yes:
             webbrowser.open(url)
-    
+
     # def changeEvent(self, event) -> None:
     #     """
     #     Handles the change event for the window state.
@@ -610,7 +632,6 @@ class MainWindow(QMainWindow):
                     if name and sequence:
                         self.listModel._data.append(protein(name, sequence))
                 self.listModel.layoutChanged.emit()
-                print(name)
 
 
 def run():
@@ -623,7 +644,7 @@ def run():
     window.resize(500, 500)
     window.show()
     # qdarktheme.setup_theme(['light', 'dark'][preserves.settings.value("pppTheme", type=int)])
-    qdarktheme.setup_theme("auto")
+    qdarktheme.load_palette()
     return context.app.exec()
 
 

@@ -4,7 +4,9 @@ from biocalcs import protein
 
 class Perseverance:
     def __init__(self, parent=None):
-        self.settings = QtCore.QSettings("Scientific Studio", 'Protein Param Pro')
+        self.settings = QtCore.QSettings("Scientific Studio", "Protein Param Pro")
+        if not self.settings.contains("needs_save"):
+            self.settings.setValue("needs_save", False)
         # print(self.settings.value("protein0", type=str))
         if not self.settings.contains("protein0"):
             self.settings.setValue("protein0", "Ara h 2")

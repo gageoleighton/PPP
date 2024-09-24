@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, QSize, QAbstractListModel, QModelIndex
 from PySide6.QtWidgets import QListView, QSizePolicy, QMenu, QColorDialog, QInputDialog
-from PySide6.QtGui import QColor, QAction
+from PySide6.QtGui import QColor, QAction, QBrush
+from base import preserves
 
 
 class MainList(QListView):
@@ -19,18 +20,19 @@ class MainList(QListView):
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setSelectionRectVisible(True)
 
         self.customContextMenuRequested.connect(self.open_menu)
 
     def sizeHint(self):
         return QSize(150, 120)
-    
+
     def open_menu(self, point):
         menu = QMenu(self)
         move_up_action = QAction("Move Up", self)
-        move_up_action.triggered.connect(lambda: self.model().move_item_up(self.currentIndex().row()))
+        move_up_action.triggered.connect(self.move_item_up)
         move_down_action = QAction("Move Down", self)
-        move_down_action.triggered.connect(lambda: self.model().move_item_down(self.currentIndex().row()))
+        move_down_action.triggered.connect(self.move_item_down)
         menu.addAction(move_up_action)
         menu.addAction(move_down_action)
         select_color = QAction("Color...", self)
@@ -40,7 +42,7 @@ class MainList(QListView):
         rename_action.triggered.connect(self.rename_item)
         menu.addAction(rename_action)
         menu.exec_(self.viewport().mapToGlobal(point))
-    
+
     def update_colors(self):
         self.model().set_color(indexes=self.selectedIndexes())
         self.clearSelection()
@@ -50,11 +52,26 @@ class MainList(QListView):
         dlg.setWindowTitle("Rename Item")
         dlg.setLabelText("Enter new name:")
         # dlg.setTextEchoMode(QInputDialog.Mode.Normal)
-        dlg.setTextValue(self.model().data(self.currentIndex(), Qt.ItemDataRole.EditRole))
+        dlg.setTextValue(
+            self.model().data(self.currentIndex(), Qt.ItemDataRole.EditRole)
+        )
         if dlg.exec_():
             new_name = dlg.textValue()
-            self.model().rename_item(self.currentIndex().row(), new_name)
-    
+            if new_name != "" and new_name != self.model().data(
+                self.currentIndex(), Qt.ItemDataRole.EditRole
+            ):
+                print("renamed!")
+                self.model().rename_item(self.currentIndex().row(), new_name)
+                preserves.settings.setValue("needs_save", True)
+
+    def move_item_up(self):
+        self.model().move_item_up(self.currentIndex().row())
+        self.setCurrentIndex(self.model().index(self.currentIndex().row() - 1, 0))
+
+    def move_item_down(self):
+        self.model().move_item_down(self.currentIndex().row())
+        self.setCurrentIndex(self.model().index(self.currentIndex().row() + 1, 0))
+
 
 class ListModel(QAbstractListModel):
     def __init__(self, data=None, parent=None):
@@ -70,11 +87,14 @@ class ListModel(QAbstractListModel):
             color = self._data[index.row()].color
             return QColor(color)
         if role == Qt.ItemDataRole.ForegroundRole:
+            # print(self._data[index.row()].color)
             if self._data[index.row()].color == "white":
-                return Qt.GlobalColor.black
+                return QBrush(QColor("black"))
+            elif self._data[index.row()].color == QColor("black").name():
+                return QBrush(QColor("white"))
             else:
                 color = list(QColor(self._data[index.row()].color).getHsv())
-                color[0] = (color[0]+180) % 360
+                color[0] = (color[0] + 180) % 360
                 return QColor.fromHsv(color[0], color[1], color[2], color[3])
         if role == Qt.ItemDataRole.EditRole:
             return self._data[index.row()].name
@@ -94,22 +114,28 @@ class ListModel(QAbstractListModel):
         if index > 0:
             self._data.insert(index - 1, self._data.pop(index))
             self.dataChanged.emit(self.index(index - 1), self.index(index))
+            preserves.settings.setValue("needs_save", True)
 
     def move_item_down(self, index):
         if index < len(self._data) - 1:
             self._data.insert(index + 1, self._data.pop(index))
             self.dataChanged.emit(self.index(index), self.index(index + 1))
-    
+            preserves.settings.setValue("needs_save", True)
+
     def supportedDropActions(self):
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
-    
+
     def set_color(self, indexes):
         color = QColorDialog.getColor()
         if color.isValid():
             for index in indexes:
-                self._data[index.row()].color = color.name()
-                self.dataChanged.emit(self.index(index.row()), self.index(index.row()))
-    
+                if color.name() != self._data[index.row()].color:
+                    self._data[index.row()].color = color.name()
+                    self.dataChanged.emit(
+                        self.index(index.row()), self.index(index.row())
+                    )
+                    preserves.settings.setValue("needs_save", True)
+
     def rename_item(self, index, new_name):
         self._data[index].name = new_name
         self.dataChanged.emit(self.index(index), self.index(index))
