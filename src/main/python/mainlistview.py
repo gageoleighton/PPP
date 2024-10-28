@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, QSize, QAbstractListModel, QModelIndex
 from PySide6.QtWidgets import QListView, QSizePolicy, QMenu, QColorDialog, QInputDialog
 from PySide6.QtGui import QColor, QAction, QBrush
 from base import preserves
-
+from customwidgets import exportDialog
 
 class MainList(QListView):
     def __init__(self, *args, data=None, **kwargs):
@@ -41,6 +41,9 @@ class MainList(QListView):
         rename_action = QAction("Rename...", self)
         rename_action.triggered.connect(self.rename_item)
         menu.addAction(rename_action)
+        export_selected_action = QAction("Export Selected...", self)
+        export_selected_action.triggered.connect(self.export_selected)
+        menu.addAction(export_selected_action)
         menu.exec_(self.viewport().mapToGlobal(point))
 
     def update_colors(self):
@@ -71,6 +74,9 @@ class MainList(QListView):
     def move_item_down(self):
         self.model().move_item_down(self.currentIndex().row())
         self.setCurrentIndex(self.model().index(self.currentIndex().row() + 1, 0))
+    
+    def export_selected(self):
+        exportDialog(self, only_selected=True)
 
 
 class ListModel(QAbstractListModel):
@@ -139,6 +145,10 @@ class ListModel(QAbstractListModel):
     def rename_item(self, index, new_name):
         self._data[index].name = new_name
         self.dataChanged.emit(self.index(index), self.index(index))
+    
+    def export_selected(self, indexes):
+        for index in indexes:
+            self._data[index.row()].export()
 
 
 if __name__ == "__main__":

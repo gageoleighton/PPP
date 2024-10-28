@@ -9,3 +9,5 @@ sign/
 cache/
 build.py
 notary.sh
+test.fasta
+test.P3

@@ -76,11 +76,15 @@ class MainWindow(QMainWindow):
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self.import_data)
 
-        export_action = QAction("&Export", self)
+        export_action = QAction("&Export...", self)
         export_action.setShortcut("Ctrl+E")
         # export_action.setDisabled(True)
         export_action.triggered.connect(self.export_data)
         # export_action.triggered.connect(lambda: self.preserves.export_settings(self))
+
+        export_selected_action = QAction("&Export Selected...", self)
+        export_selected_action.setShortcut("Ctrl+Shift+E")
+        export_selected_action.triggered.connect(self.export_selected)
 
         save_action = QAction("&Save", self)
         save_action.setShortcut("Ctrl+S")
@@ -107,6 +111,7 @@ class MainWindow(QMainWindow):
             [
                 import_action,
                 export_action,
+                export_selected_action,
                 save_action,
                 delete_save_action,
                 settings_action,
@@ -569,23 +574,10 @@ class MainWindow(QMainWindow):
     # Export data as a fasta file
     def export_data(self) -> None:
         # dialog for saving file
-        file_dialog = QFileDialog(self)
-        file_dialog.setWindowTitle("Export data")
-        file_dialog.setNameFilters(["Fasta Files (*.fasta)", "Protein Param Pro (*.P3)"])
-        file_dialog.selectNameFilter("Protein Param Pro (*.P3)")
-        file_dialog.setDefaultSuffix(".P3")
-        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        exportDialog(self.listWidget)
 
-        # file_dialog.exec()
-        if file_dialog.exec() == QDialog.Accepted:
-            fileName = file_dialog.selectedFiles()[0]
-            with open(fileName, "wb") as f:
-                data = self.listModel._data
-                if fileName.endswith(".P3"):
-                    pickle.dump(data, f)
-                elif fileName.endswith(".fasta"):
-                    for item in data:
-                        f.write(f">{item.name}\n{item.sequence}\n")
+    def export_selected(self) -> None:
+        exportDialog(self.listWidget, only_selected=True)
 
     # Import data from a fasta file
     def import_data(self) -> None:
